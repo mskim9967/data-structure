@@ -182,4 +182,4 @@ int main(){
 	std::cout << "--------------------" << std::endl;
 
 	graph.bfs(graph.adjList[0]);
-}
+} 
