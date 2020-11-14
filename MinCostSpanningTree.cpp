@@ -159,9 +159,12 @@ public:
 	int edgeCnt, vertCnt;
 
 	Graph() {
-		edgeList = new Edge<T>*[VERT_MAX * VERT_MAX];
+	    edgeList = new Edge<T>*[VERT_MAX * VERT_MAX];
 		vertList = new Vertex<T>*[VERT_MAX];
 		edgeCnt = vertCnt = 0;
+	}
+	Graph(const Graph<T> &origin) : Graph() {
+        copy(origin);
 	}
 	~Graph(){
 		for(int i = 0; i < edgeCnt; i++)	delete edgeList[i];
@@ -169,7 +172,21 @@ public:
 		delete edgeList;
 		delete vertList;
 	}
-
+    Graph<T> operator=(const Graph<T>& arg) {
+        for(int i = 0; i < edgeCnt; i++)	delete edgeList[i];
+		for(int i = 0; i < vertCnt; i++)	delete vertList[i];
+		edgeCnt = vertCnt = 0;
+		copy(arg);
+        return *this;
+    }
+    void copy(const Graph<T> &origin) {
+        for(int i = 0; i < origin.vertCnt; i++)
+			add_vert(origin.vertList[i] -> key, origin.vertList[i] -> value);
+		for(int i = 0; i < origin.edgeCnt; i++)
+			add_edge(vertList[origin.edgeList[i] -> vert1 -> key],
+				vertList[origin.edgeList[i] -> vert2 -> key], origin.edgeList[i] -> weight);
+    }
+    
 	void add_vert(int key, T value) {
 		vertList[vertCnt++] = new Vertex<T>(key, value);
 	}
@@ -182,17 +199,8 @@ public:
 		edgeList[edgeCnt++] = new Edge<T>(vertList[key1], vertList[key2], weight);
 	}
 
-	void copy_to(Graph<T>& cp) {	//deepcopy itself to cp
-		cp.vertCnt = cp.edgeCnt = 0;
-		for(int i = 0; i < vertCnt; i++)
-			cp.add_vert(vertList[i] -> key, vertList[i] -> value);
-		for(int i = 0; i < edgeCnt; i++)
-			cp.add_edge(cp.vertList[edgeList[i] -> vert1 -> key],
-				cp.vertList[edgeList[i] -> vert2 -> key], edgeList[i] -> weight);
-	}
-
-	void make_kruskal_to(Graph<T>& mst) {	//make min spanning tree to mst
-		this -> copy_to(mst);
+	Graph make_kruskal() {
+		Graph<T> mst(*this);
 
 		Set vertSet;
 		for(int i = 0; i < vertCnt; i++)
@@ -205,16 +213,17 @@ public:
 		}
 		mst.edgeCnt = 0;
 
-		for(Edge<T> *minEdge = heap.pop(); !heap.isEmpty(); minEdge = heap.pop()) {
+		for(Edge<T> *minEdge = heap.pop(); mst.edgeCnt != vertCnt - 1|| !heap.isEmpty(); minEdge = heap.pop()) {
 			if(vertSet.find(minEdge -> vert1 -> key) != vertSet.find(minEdge -> vert2 -> key)) {	//if no cycle
 				vertSet.uni(minEdge -> vert1 -> key, minEdge -> vert2 -> key);
 				mst.add_edge(minEdge -> vert1, minEdge -> vert2, minEdge -> weight);
 			}
 		}
+		return mst;
 	}
-
-	void make_prim_to(Graph<T>& mst) {
-		this -> copy_to(mst);
+/* wrong code
+	Graph make_prim() {
+		Graph<T> mst(*this);
 
 		Set vertSet;
 		for(int i = 0; i < vertCnt; i++)
@@ -247,11 +256,14 @@ public:
 			}
 		}
 
-		for(int i = 0; i < primEdgeCnt; i++)
+		for(int i = 0; i < primEdgeCnt; i++) 
 			mst.edgeList[i] = primEdgeList[i];
-		mst.edgeCnt = primEdgeCnt;
-	}
 
+		mst.edgeCnt = primEdgeCnt;
+		
+		return mst;
+	}
+*/
 };
 
 int main() {
@@ -269,34 +281,31 @@ int main() {
 	graph.add_edge(4, 6, 24);
 	graph.add_edge(4, 5, 25);
 
-	graph.make_kruskal_to(mstGraph);
+    mstGraph = graph.make_kruskal();
+    
 	for(int i = 0; i < mstGraph.edgeCnt; i++)
 		(mstGraph.edgeList[i]) -> print();
 
 	std::cout << "----------------------" << std::endl;
-
-	graph.make_prim_to(mstGraph);
+	/*
+	mstGraph = graph.make_prim();
 	for(int i = 0; i < mstGraph.edgeCnt; i++)
 		(mstGraph.edgeList[i]) -> print();
 
-/*
+
 	for(int i = 0; i < g.vertCnt; i++)
 		(g.vertList[i]) -> print();
-
 	for(int i = 0; i < g.edgeCnt; i++)
 		(g.edgeList[i]) -> print();
-
 	MinHeap<Edge<char>> m;
 	m.push(g.edgeList[0]);
 	m.push(g.edgeList[1]);
 	m.push(g.edgeList[2]);
 	m.push(g.edgeList[3]);
 	m.push(g.edgeList[4]);
-
 	m.print();
 	std::cout<<"pop: ";
 	m.pop() -> print();
-
 	m.print();
 	*/
 }
