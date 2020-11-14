@@ -1,5 +1,5 @@
 #include <iostream>
-#include <limits> 
+#include <limits>
 #define PREORDER 1
 
 template <typename T>
@@ -22,16 +22,15 @@ public:
 			return (this -> key < key);
 		}
 	};
-	
 	Node *root;
-	
+
 	BinarySearchTree() : root(NULL) {}
-	
+
 	void add_node(T data, int key) {
 		if(root == NULL)	root = new Node(data, key);	//첫 노드 삽입
 		else	add_node(data, key, root, NULL);
 	}
-	
+
 	void add_node(T data, int key, Node *nodePtr, Node *nodeParentPtr) {
 		if(nodePtr == NULL) {
 			if(*nodeParentPtr < key ) {
@@ -49,34 +48,34 @@ public:
 			add_node(data, key, nodePtr, nodeParentPtr);
 		}
 	}
-	
+
 	Node *find_nodePtr(int key) {
 		Node *curr = root;
-		while(curr != NULL && key != curr -> key) 
+		while(curr != NULL && key != curr -> key)
 			curr = *curr < key ? curr -> right : curr -> left;
 		return curr;	//못찾으면 NULL 반환
 	}
-	
+
 	void connect_parent_child(Node *parent, Node *child) {
 		(parent -> left == child -> parent ? parent -> left : parent -> right) = child;
 	}
-	
+
 	void disconnect_parent_itself(Node *itself) {
 		(itself -> parent -> left == itself ? itself -> parent -> left : itself -> parent -> right) = NULL;
 	}
-	
+
 	bool delete_node(int key) {
 		Node *deletePtr = find_nodePtr(key);
 		if(deletePtr == NULL)	return false;	//삭제할 노드 못찾으면 종료
-	
+
 		if(deletePtr -> right != NULL && deletePtr -> left == NULL)	//삭제할 노드에 우측자식이 있으면 부모와 우측 연결
 			connect_parent_child(deletePtr -> parent, deletePtr -> right);
-		
+
 		else if(deletePtr -> right == NULL && deletePtr -> left != NULL)	//삭제할 노드에 좌측자식이 있으면 부모와 좌측 연결
 			connect_parent_child(deletePtr -> parent, deletePtr -> left);
-			
+
 		else if(deletePtr -> right != NULL && deletePtr -> left != NULL) {	//삭제할 노드에 양쪽자식이 있으면
-			Node *swapPtr = deletePtr-> right;	
+			Node *swapPtr = deletePtr-> right;
 			while(swapPtr -> left != NULL) 	//대체 노드(삭제노드보다 큰 최소값) 찾기
 				swapPtr = swapPtr -> left;
 			deletePtr -> data = swapPtr -> data;	//키값노드, 대체노드 교환
@@ -88,13 +87,13 @@ public:
 			deletePtr = swapPtr;
 		}
 		else {	//삭제할 노드에 자식이 없을 때
-			if(deletePtr == root)	return false;	//루트값이면 종료	
-			disconnect_parent_itself(deletePtr);	//삭제노드와 부모 연결 해제		
+			if(deletePtr == root)	return false;	//루트값이면 종료
+			disconnect_parent_itself(deletePtr);	//삭제노드와 부모 연결 해제
 		}
 		delete deletePtr;
 		return true;
 	}
-	
+
 	void print(int order) {
 		switch(order){
 			case PREORDER :
@@ -110,10 +109,11 @@ public:
 			preorder(ptr -> right);
 		}
 	}
-	
+
 };
 
 int main() {
+	std::cout << "---------------------------" << std::endl;
 	BinarySearchTree<char> bst;
 	bst.add_node('a', 10);
 	bst.add_node('b', -10);
@@ -126,20 +126,17 @@ int main() {
 	bst.add_node('i', 1);
 	bst.add_node('j', 4);
 	bst.print(PREORDER);
-
-	std::cout << bst.find_nodePtr(-20) -> data << std::endl;
-	
-	std::cout << "DELETE NODE 1"<< std::endl;	
+	std::cout << "DELETE NODE 1"<< std::endl;
 	bst.delete_node(1);
 	bst.print(PREORDER);
-	std::cout << "DELETE NODE 3"<< std::endl;	
+	std::cout << "DELETE NODE 3"<< std::endl;
 	bst.delete_node(3);
 	bst.print(PREORDER);
-	std::cout << "DELETE NODE 32"<< std::endl;	
+	std::cout << "DELETE NODE 32"<< std::endl;
 	bst.delete_node(32);
 	bst.print(PREORDER);
-	std::cout << "DELETE NODE 1000"<< std::endl;	
+	std::cout << "DELETE NODE 1000"<< std::endl;
 	bst.delete_node(1000);
 	bst.print(PREORDER);
-
+	std::cout << "---------------------------" << std::endl;
 }
