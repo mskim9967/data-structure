@@ -286,6 +286,10 @@ public:
 			    }
 			}
 		}
+		for(int i = 0; i < vertCnt; i++)
+		    for(int j = 0; j < vertCnt; j++)
+		        delete edge[i][j];
+		
 		return mst;
 	}
 
