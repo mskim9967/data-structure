@@ -52,21 +52,26 @@ public:
 	int arr[VERT_MAX], vertCnt;
 
 	Set(){
-		for(int i = 0; i < VERT_MAX; i++)	arr[i] = -1;
 		vertCnt = 0;
 	}
 
 	void add_vert() {
-		arr[vertCnt++] = vertCnt;
+		arr[vertCnt++] = -1;
 	}
 
 	void uni(int vert1, int vert2) {
-		if(vert1 < vert2)	arr[vert2] = vert1;
-		else	arr[vert1] = vert2;
+		if(vert1 < vert2) {
+		    arr[vert2] = vert1;
+		    if(arr[vert1] == -1)    arr[vert1] = vert1;
+		}
+		else {
+		    arr[vert1] = vert2;
+		    if(arr[vert2] == -1)    arr[vert2] = vert2;
+		}
 	}
 
 	int find(int vert) {
-		if(arr[vert] == vert)	return vert;
+		if(arr[vert] == vert || arr[vert] == -1)	return vert;
 		else	return find(arr[vert]);
 	}
 };
@@ -93,6 +98,9 @@ public:
 	MinHeap() {
 		nodeCnt = 0;
 		tree = new Node*[VERT_MAX];
+		for(int i = 0; i < VERT_MAX; i++) {
+		    tree[i] = NULL;
+		}
 	}
 	~MinHeap(){
 		for(int i = 0; i < nodeCnt; i++)	delete tree[i];
@@ -137,6 +145,7 @@ public:
 			else	//if no child
 				break;
 		}
+		
 		return returnVal;
 	}
 
@@ -221,7 +230,7 @@ public:
 		}
 		return mst;
 	}
-/* wrong code
+
 	Graph make_prim() {
 		Graph<T> mst(*this);
 
@@ -229,41 +238,57 @@ public:
 		for(int i = 0; i < vertCnt; i++)
 			vertSet.add_vert();
 
-		Edge<T> *primEdgeList[VERT_MAX * VERT_MAX];
-		int primEdgeCnt = 0;
+		Edge<T> *edge[vertCnt][vertCnt];
+		for(int i = 0; i < vertCnt; i++)
+		    for(int j = 0; j < vertCnt; j++)
+		        edge[i][j] = NULL;
+
+		    
+		        
+	    for(int i = 0; i < edgeCnt; i++) {
+	        edge[mst.edgeList[i] -> vert1 -> key][mst.edgeList[i] -> vert2 -> key] = mst.edgeList[i];
+	        edge[mst.edgeList[i] -> vert2 -> key][mst.edgeList[i] -> vert1 -> key] = mst.edgeList[i];
+	        mst.edgeList[i] = NULL;
+	    }
+	    mst.edgeCnt = 0;
+
 		MinHeap<Edge<T>> heap;
+		for(int i = 0; i < vertCnt; i++) {
+			if(edge[0][i] != NULL) {	//start with 0
+				heap.push(edge[0][i]);
+				edge[0][i] = NULL;
+				edge[i][0] = NULL;
+			}
 
-		for(int i = 0; i < edgeCnt; i++) {
-			if(*(mst.edgeList[i] -> vert1) == 0 || *(mst.edgeList[i] -> vert2) == 0) {	//start with 0
-				heap.push(mst.edgeList[i]);
-				mst.edgeList[i] = NULL;
+		}
+		vertSet.uni(0, 0);
+
+		for(Edge<T> *popEdge = heap.pop(); mst.edgeCnt != vertCnt - 1; popEdge = heap.pop()) {
+			if(vertSet.find(popEdge -> vert1 -> key) != vertSet.find(popEdge -> vert2 -> key)) {	//if no cycle
+				int newKey = vertSet.arr[popEdge -> vert1 -> key] == -1 ? popEdge -> vert1 -> key : popEdge -> vert2 -> key;
+				vertSet.uni(popEdge -> vert1 -> key, popEdge -> vert2 -> key);
+				
+			    mst.edgeList[mst.edgeCnt++] = popEdge;
+			    
+			    for(int i = 0; i < vertCnt; i++) {
+			        if(edge[newKey][i] != NULL) {
+			            heap.push(edge[newKey][i]);
+        				edge[newKey][i] = NULL;
+        				edge[i][newKey] = NULL;
+        				
+			        }
+			        if(edge[i][newKey] != NULL) {
+			            heap.push(edge[i][newKey]);
+        				edge[newKey][i] = NULL;
+        				edge[i][newKey] = NULL;
+			        }
+
+			    }
 			}
 		}
-
-		for(Edge<T> *pop = heap.pop(); !heap.isEmpty(); pop = heap.pop()) {
-			if(vertSet.find(pop -> vert1 -> key) != vertSet.find(pop -> vert2 -> key)) {	//if no cycle
-				vertSet.uni(pop -> vert1 -> key, pop -> vert2 -> key);
-				primEdgeList[primEdgeCnt++] = pop;
-				for(int i = 0; i < edgeCnt; i++) {
-					if(mst.edgeList[i] != NULL && (*(mst.edgeList[i] -> vert1) == *(pop -> vert1)
- 						|| *(mst.edgeList[i] -> vert2) == *(pop -> vert1)
-						|| *(mst.edgeList[i] -> vert1) == *(pop -> vert2)
-						|| *(mst.edgeList[i] -> vert2) == *(pop -> vert2))) {
-						heap.push(mst.edgeList[i]);
-						mst.edgeList[i] = NULL;
-					}
-				}
-			}
-		}
-
-		for(int i = 0; i < primEdgeCnt; i++) 
-			mst.edgeList[i] = primEdgeList[i];
-
-		mst.edgeCnt = primEdgeCnt;
-		
 		return mst;
 	}
-*/
+
 };
 
 int main() {
@@ -287,12 +312,13 @@ int main() {
 		(mstGraph.edgeList[i]) -> print();
 
 	std::cout << "----------------------" << std::endl;
-	/*
-	mstGraph = graph.make_prim();
-	for(int i = 0; i < mstGraph.edgeCnt; i++)
-		(mstGraph.edgeList[i]) -> print();
-
-
+	
+	Graph mstGraph_ = graph.make_prim();
+	
+	for(int i = 0; i < mstGraph_.edgeCnt; i++)
+		(mstGraph_.edgeList[i]) -> print();
+		
+/*
 	for(int i = 0; i < g.vertCnt; i++)
 		(g.vertList[i]) -> print();
 	for(int i = 0; i < g.edgeCnt; i++)
