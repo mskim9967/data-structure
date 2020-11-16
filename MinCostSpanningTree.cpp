@@ -230,7 +230,7 @@ public:
 		}
 		return mst;
 	}
-
+	/* wrong, have to use adjList
 	Graph make_prim() {
 		Graph<T> mst(*this);
 
@@ -292,7 +292,7 @@ public:
 		
 		return mst;
 	}
-
+	*/
 };
 
 int main() {
@@ -314,15 +314,14 @@ int main() {
     
 	for(int i = 0; i < mstGraph.edgeCnt; i++)
 		(mstGraph.edgeList[i]) -> print();
-
+/*
 	std::cout << "----------------------" << std::endl;
 	
 	Graph mstGraph_ = graph.make_prim();
 	
 	for(int i = 0; i < mstGraph_.edgeCnt; i++)
 		(mstGraph_.edgeList[i]) -> print();
-		
-/*
+
 	for(int i = 0; i < g.vertCnt; i++)
 		(g.vertList[i]) -> print();
 	for(int i = 0; i < g.edgeCnt; i++)
