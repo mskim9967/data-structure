@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <deque>
+#define INT_MAX 9999
 
 using namespace std;
 
@@ -48,6 +49,7 @@ public:
 
 	void dijkstra(int sKey) {
 		int weight[vertVec.size()][vertVec.size()];
+    	int prev[vertVec.size()];
 		for(int i =0; i < vertVec.size(); i++)
 			for(int j =0; j < vertVec.size(); j++)
 				weight[i][j] = 0;
@@ -64,7 +66,7 @@ public:
 		}
 
 		minWeight[sKey] = 0;
-
+        prev[sKey] = -1;
 		while(1) {
 			int nowKey = -1;
 			for(int i = 0, min = INT_MAX; i < vertVec.size(); i++) {
@@ -79,21 +81,16 @@ public:
 			for(int i = 0; i < vertVec.size(); i++) {
 				if(weight[nowKey][i] != 0 && minWeight[i] > minWeight[nowKey] + weight[nowKey][i]) {
 					minWeight[i] = minWeight[nowKey] + weight[nowKey][i];
+                    prev[i] = nowKey;
 
-					minPath[i].clear();
-					for(int j = 0; j < minPath[nowKey].size(); j++)
-						minPath[i].push_back(minPath[nowKey][j]);
-					minPath[i].push_back(&vertVec[i]);
 				}
 			}
 		}
 
 		for(int i = 0; i < minWeight.size(); i++) {
 			if(minWeight[i] == INT_MAX || sKey == i)	continue;
-			vertVec[sKey].print();
-			for(int j = 0; j < minPath[i].size(); j++) {
-				cout << " -> ";
-				minPath[i][j] -> print();
+            for(int j = i; j != -1; j = prev[j]) {
+                cout << j << " ";
 			}
 			cout << " [" << minWeight[i] << "] " << endl;
 		}
@@ -123,47 +120,3 @@ int main() {
 
 	g.dijkstra(0);
 }
-
-/*
-O(n^2logn)
-	void dijkstra(int sKey) {
-		deque<int> nextVert;
-		vector<int> minWeight;
-		vector<vector<Vertex<T>*>> minPath; 
-		for(int i = 0; i < vertVec.size(); i++) {
-			minWeight.push_back(INT_MAX);
-			minPath.push_back(vector<Vertex<T>*>());
-		}
-
-		minWeight[sKey] = 0;
-		nextVert.push_back(sKey);
-
-		while(!nextVert.empty()) {
-			int nextKey = nextVert.front();
-			nextVert.pop_front();
-
-			for(int i = 0; i < edgeVec.size(); i++) {
-				Edge<T> edge = edgeVec[i];
-				if(*(edge.from) == nextKey && minWeight[edge.to -> key] >  minWeight[nextKey] + edge.weight) {
-					minWeight[edge.to -> key] = minWeight[nextKey] + edge.weight;
-					nextVert.push_back(edge.to -> key);
-
-					minPath[edge.to -> key].clear();
-					for(int j = 0; j < minPath[edge.from -> key].size(); j++)
-						minPath[edge.to -> key].push_back(minPath[edge.from -> key][j]);
-					minPath[edge.to -> key].push_back(edge.to);
-				}
-			}
-		}
-
-		for(int i = 0; i < minWeight.size(); i++) {
-			if(minWeight[i] == INT_MAX || sKey == i)	continue;
-			vertVec[sKey].print();
-			for(int j = 0; j < minPath[i].size(); j++) {
-				cout << " -> ";
-				minPath[i][j] -> print();
-			}
-			cout << " [" << minWeight[i] << "] " << endl;
-		}
-	}
-*/
